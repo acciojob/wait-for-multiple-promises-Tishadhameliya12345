@@ -1,34 +1,53 @@
 //your JS code here. If required.
-document.addEventListener("DOMContentLoaded", function () {
-  const outputTable = document.getElementById("output");
+const res = document.getElementById("output");
 
-  // Function to create a promise that resolves after a random time (1-3 seconds)
-  function createPromise(index) {
-    return new Promise((resolve) => {
-      const timeTaken = (Math.random() * (3 - 1) + 1).toFixed(3);
-      setTimeout(() => {
-        resolve({ name: `Promise ${index + 1}`, time: timeTaken });
-      }, timeTaken * 1000);
+const promises = [
+  new Promise((resolve) => {
+    const time = Math.floor(Math.random() * 3 + 1) * 1000;
+    setTimeout(() => resolve({ name: "Promise 1", time: time / 1000 }), time);
+  }),
+  new Promise((resolve) => {
+    const time = Math.floor(Math.random() * 3 + 1) * 1000;
+    setTimeout(() => resolve({ name: "Promise 2", time: time / 1000 }), time);
+  }),
+  new Promise((resolve) => {
+    const time = Math.floor(Math.random() * 3 + 1) * 1000;
+    setTimeout(() => resolve({ name: "Promise 3", time: time / 1000 }), time);
+  }),
+];
+
+async function callFns() {
+  const start = new Date();
+  // Use Promise.all to wait for all Promises to resolve
+  res.innerHTML += `
+            <tr id="loading">
+                <td colspan=2>Loading...</td>
+            </tr>
+          `;
+  await Promise.all(promises)
+    .then((results) => {
+      res.innerHTML = ``;
+      // Log the array of results
+      results.forEach((e) => {
+        res.innerHTML += `
+            <tr>
+                <td>${e.name}</td>
+                <td>${e.time}</td>
+            </tr>
+          `;
+      });
+    })
+    .catch((error) => {
+      console.error(error);
     });
-  }
 
-  // Create an array of 3 promises
-  const promises = [createPromise(0), createPromise(1), createPromise(2)];
-
-  // Wait for all promises to resolve
-  Promise.all(promises).then((results) => {
-    // Remove loading row
-    outputTable.innerHTML = "";
-
-    // Append resolved promises to the table
-    results.forEach((result) => {
-      const row = `<tr><td>${result.name}</td><td>${result.time}</td></tr>`;
-      outputTable.innerHTML += row;
-    });
-
-    // Calculate the total time (maximum time taken)
-    const totalTime = Math.max(...results.map((res) => parseFloat(res.time))).toFixed(3);
-    const totalRow = `<tr><td><strong>Total</strong></td><td><strong>${totalTime}</strong></td></tr>`;
-    outputTable.innerHTML += totalRow;
-  });
-});
+  const end = new Date();
+  const timeInMillis = end - start;
+  res.innerHTML += `
+            <tr>
+                <td>Total</td>
+                <td>${timeInMillis / 1000}</td>
+            </tr>
+          `;
+}
+callFns();
